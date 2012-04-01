@@ -6,13 +6,14 @@ package Dist::Zilla::App::Command::cover;
 
 # ABSTRACT: Code coverage metrics for your distribution
 use Dist::Zilla::App -command;
-use File::Temp;
-use Path::Class;
-use File::chdir;
 sub abstract { "code coverage metrics for your distribution" }
 
 sub execute {
     my $self = shift;
+
+    require File::Temp;
+    require Path::Class;
+
     local $ENV{HARNESS_PERL_SWITCHES} = '-MDevel::Cover';
     my @cover_command = @ARGV;
 
@@ -31,7 +32,9 @@ sub execute {
     $self->zilla->run_tests_in($target);
 
     $self->log(join ' ' => @cover_command);
-    local $CWD = $target;
+
+    require File::chdir;
+    local $File::chdir::CWD = $target;
     system @cover_command;
     $self->log("leaving $target intact");
 }
